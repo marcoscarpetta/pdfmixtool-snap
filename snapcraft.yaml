@@ -18,8 +18,6 @@ apps:
       - pulseaudio
       - wayland
       - removable-media
-    extensions:
-      - kde-neon
 
 parts:
   pdfmixtool:
