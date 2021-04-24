@@ -1,4 +1,5 @@
 name: pdfmixtool
+version: "1.0beta"
 confinement: strict
 grade: stable
 base: core20
@@ -36,20 +37,18 @@ parts:
         - "-DCMAKE_BUILD_TYPE=Release"
         parse-info:
         - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
-      libqpdf:
-    plugin: make
-    override-build: |
-        ./configure --prefix=/usr --disable-static
-        make
-        make DESTDIR=$SNAPCRAFT_PART_INSTALL install
-    source: https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.3.1/qpdf-10.3.1.tar.gz
-    build-packages:
-    - build-essential
-    - pkg-config
-    - libjpeg8-dev
-    - zlib1g-dev
-    stage-packages:
-    - libjpeg8
-    - zlib1g
-
-version: "1.0beta"
+    libqpdf:
+        plugin: make
+        override-build: |
+            ./configure --prefix=/usr --disable-static
+            make
+            make DESTDIR=$SNAPCRAFT_PART_INSTALL install
+        source: https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.3.1/qpdf-10.3.1.tar.gz
+        build-packages:
+        - build-essential
+        - pkg-config
+        - libjpeg8-dev
+        - zlib1g-dev
+        stage-packages:
+        - libjpeg8
+        - zlib1g
