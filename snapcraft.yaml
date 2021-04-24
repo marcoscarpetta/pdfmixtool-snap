@@ -27,8 +27,8 @@ parts:
     plugin: cmake
     cmake-parameters: [-DCMAKE_BUILD_TYPE=Release, -DCMAKE_INSTALL_PREFIX=/usr]
     build-snaps:
-      - kde-frameworks-5-qt-5-15-core20-sdk
-      - kde-frameworks-5-qt-5-15-core20
+      - kde-frameworks-5-qt-5-15-core20-sdk/latest/stable
+      - kde-frameworks-5-qt-5-15-core20/latest/stable
     source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/v1.0beta/pdfmixtool-v1.0beta.tar.gz
       
   libqpdf:
