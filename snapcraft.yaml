@@ -4,39 +4,60 @@ confinement: strict
 grade: stable
 base: core20
 adopt-info: pdfmixtool
+
+plugs:
+    desktop:
+    desktop-legacy:
+    wayland:
+    unity7:
+    home:
+    removable-media:
+    gsettings:
+    gtk-3-themes:
+        interface: content
+        target: $SNAP/data-dir/themes
+        default-provider: gtk-common-themes:gtk-3-themes
+    icon-themes:
+        interface: content
+        target: $SNAP/data-dir/icons
+        default-provider: gtk-common-themes:icon-themes
+    sound-themes:
+        interface: content
+        target: $SNAP/data-dir/sounds
+        default-provider: gtk-common-themes:sounds-themes
+
 apps:
     pdfmixtool:
-        extensions:
-        - kde-neon
         common-id: eu.scarpetta.PDFMixTool.desktop
         command: usr/bin/pdfmixtool
-        plugs:
-        - home
-        - removable-media
+
 slots:
     session-dbus-interface:
         interface: dbus
         name: eu.scarpetta.PDFMixTool.desktop
         bus: session
-package-repositories:
--   type: apt
-    components:
-    - main
-    suites:
-    - focal
-    key-id: 444DABCF3667D0283F894EDDE6D4736255751E5D
-    url: http://origin.archive.neon.kde.org/user
-    key-server: keyserver.ubuntu.com
+
 parts:
     pdfmixtool:
-        after: [libqpdf]
+        after: [qt5, libqpdf]
         plugin: cmake
         source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/v1.0beta/pdfmixtool-v1.0beta.tar.gz
         cmake-parameters:
-        - "-DCMAKE_INSTALL_PREFIX=/usr"
-        - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_PREFIX=/usr"
+            - "-DCMAKE_BUILD_TYPE=Release"
+        build-packages:
+            - build-essential
+            - qtbase5-dev
+            - qttools5-dev
+        stage-packages:
+            - dbus
+            - qttranslations5-l10n # common translations
+            - qtwayland5
+            - qt5-gtk-platformtheme # for theming, font settings, cursor and to use gtk3 file chooser
+            - qt5-style-plugins # for mouse cursor theme fix
         parse-info:
-        - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
+            - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
+        
     libqpdf:
         plugin: make
         override-build: |
@@ -45,10 +66,38 @@ parts:
             make DESTDIR=$SNAPCRAFT_PART_INSTALL install
         source: https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.3.1/qpdf-10.3.1.tar.gz
         build-packages:
-        - build-essential
-        - pkg-config
-        - libjpeg8-dev
-        - zlib1g-dev
+            - build-essential
+            - pkg-config
+            - libjpeg8-dev
+            - zlib1g-dev
         stage-packages:
-        - libjpeg8
-        - zlib1g
+            - libjpeg8
+            - zlib1g
+      
+    qt5:
+        source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+        source-subdir: qt
+        plugin: make
+        make-parameters: ["FLAVOR=qt5"]
+        build-packages:
+            - qtbase5-dev
+            - dpkg-dev
+        stage-packages:
+            - libxkbcommon0
+            - ttf-ubuntu-font-family
+            - dmz-cursor-theme
+            - light-themes
+            - adwaita-icon-theme
+            - gnome-themes-standard
+            - shared-mime-info
+            - libqt5gui5
+            - libgdk-pixbuf2.0-0
+            - libqt5svg5 # for loading icon themes which are svg
+            - appmenu-qt5
+            - locales-all
+      
+    launchers: # custom launcher to set QT_QPA_PLATFORMTHEME=gtk3 correctly
+        source: snap/local/launchers
+        plugin: dump
+        organize:
+            '*': bin/
