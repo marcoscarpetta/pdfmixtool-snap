@@ -18,7 +18,7 @@ apps:
       - pulseaudio
       - wayland
       - removable-media
-   extensions:
+    extensions:
       - kde-neon
 
 parts:
