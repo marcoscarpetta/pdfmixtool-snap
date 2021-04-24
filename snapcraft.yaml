@@ -1,0 +1,51 @@
+name: pdfmixtool
+version: '1.0beta'
+license: GPL-3.0+
+base: core20
+grade: stable
+confinement: strict
+adopt-info: pdfmixtool
+
+apps:
+  pdfmixtool:
+    common-id: eu.scarpetta.PDFMixTool.desktop
+    command: pdfmixtool
+    plugs:
+      - home
+      - opengl
+      - network
+      - network-bind
+      - pulseaudio
+      - wayland
+      - removable-media
+   extensions:
+      - kde-neon
+
+parts:
+  pdfmixtool:
+    after: [libqpdf]
+    parse-info:
+      - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
+    plugin: cmake
+    build-snaps:
+      - kde-frameworks-5-qt-5-15-core20-sdk
+      - kde-frameworks-5-qt-5-15-core20
+    source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/v1.0beta/pdfmixtool-v1.0beta.tar.gz
+    configflags: [-DCMAKE_BUILD_TYPE=Release, -DCMAKE_INSTALL_PREFIX=/usr]
+      
+  libqpdf:
+    plugin: make
+    override-build: |
+      ./configure --prefix=/usr --disable-static
+      make
+      make DESTDIR=$SNAPCRAFT_PART_INSTALL install
+    source: https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.3.1/qpdf-10.3.1.tar.gz
+    source-type: tar
+    build-packages:
+      - build-essential
+      - pkg-config
+      - libjpeg8-dev
+      - zlib1g-dev
+    stage-packages:
+      - libjpeg8
+      - zlib1g
