@@ -1,27 +1,36 @@
 name: pdfmixtool
-version: 1.0beta
 confinement: strict
 grade: stable
 base: core20
 adopt-info: pdfmixtool
+    
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+  - build-on: armhf
+  #- build-on: i386 # Not supported by core20
+  - build-on: ppc64el
+  - build-on: s390x
+
 apps:
   pdfmixtool:
-    common-id: eu.scarpetta.PDFMixTool.desktop
-    command: usr/bin/pdfmixtool
+    command: bin/desktop-launch $SNAP/usr/bin/pdfmixtool
+    desktop: usr/share/applications/eu.scarpetta.PDFMixTool.desktop
     plugs:
-    - desktop
-    - desktop-legacy
-    - opengl
-    - wayland
-    - x11
-    - home
-    - removable-media
-    command-chain:
-    - snap/command-chain/desktop-launch
+      - home
+      - desktop
+      - desktop-legacy
+      - x11
+      - wayland
+      - opengl
+      - removable-media
+
 parts:
   pdfmixtool:
     after:
     - libqpdf
+    - desktop-qt5
+    plugin: cmake
     plugin: cmake
     source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/v1.0beta/pdfmixtool-v1.0beta.tar.gz
     cmake-parameters:
@@ -29,8 +38,7 @@ parts:
     - -DCMAKE_BUILD_TYPE=Release
     parse-info:
     - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
-    build-environment: &id001
-    - SNAPCRAFT_CMAKE_ARGS: -DCMAKE_FIND_ROOT_PATH=/snap/kde-frameworks-5-qt-5-15-core20-sdk/current
+
   libqpdf:
     plugin: make
     override-build: |
@@ -46,38 +54,28 @@ parts:
     stage-packages:
     - libjpeg8
     - zlib1g
-    build-environment: *id001
-  kde-neon-extension:
-    build-packages:
-    - g++
-    build-snaps:
-    - kde-frameworks-5-qt-5-15-core20-sdk/latest/candidate
-    make-parameters:
-    - PLATFORM_PLUG=kde-frameworks-5-plug
+
+  # Remote part for support of various desktop technologies
+  # Refer: https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
+  desktop-qt5:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-depth: 1
+    source-subdir: qt
     plugin: make
-    source: $SNAPCRAFT_EXTENSIONS_DIR/desktop
-    source-subdir: kde-neon
-assumes:
-- snapd2.43
-plugs:
-  icon-themes:
-    default-provider: gtk-common-themes
-    interface: content
-    target: $SNAP/data-dir/icons
-  kde-frameworks-5-plug:
-    content: kde-frameworks-5-qt-5-15-core20-all
-    default-provider: kde-frameworks-5-qt-5-15-core20
-    interface: content
-    target: $SNAP/kf5
-  sound-themes:
-    default-provider: gtk-common-themes
-    interface: content
-    target: $SNAP/data-dir/sounds
-environment:
-  SNAP_DESKTOP_RUNTIME: $SNAP/kf5
-hooks:
-  configure:
-    command-chain:
-    - snap/command-chain/hooks-configure-desktop
-    plugs:
-    - desktop
+    make-parameters: ["FLAVOR=qt5"]
+    build-packages:
+      - qtbase5-dev
+      - dpkg-dev
+    stage-packages:
+      - libxkbcommon0
+      - ttf-ubuntu-font-family
+      - dmz-cursor-theme
+      - light-themes
+      - adwaita-icon-theme
+      - gnome-themes-standard
+      - shared-mime-info
+      - libqt5gui5
+      - libgdk-pixbuf2.0-0
+      - libqt5svg5 # for loading icon themes which are svg
+      - try: [appmenu-qt5] # not available on core18
+      - locales-all
