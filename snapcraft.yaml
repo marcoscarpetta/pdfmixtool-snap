@@ -28,16 +28,26 @@ apps:
 parts:
   pdfmixtool:
     after:
-    - libqpdf
-    - desktop-qt5
+      - libqpdf
+      - desktop-qt5
     plugin: cmake
     plugin: cmake
     source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/v1.0beta/pdfmixtool-v1.0beta.tar.gz
     cmake-parameters:
-    - -DCMAKE_INSTALL_PREFIX=/usr
-    - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DCMAKE_BUILD_TYPE=Release
     parse-info:
-    - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
+      - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
+    build-packages:
+      - build-essential
+      - qtbase5-dev
+      - qttools5-dev
+    stage-packages:
+      - dbus
+      - qttranslations5-l10n # common translations
+      - qtwayland5
+      - qt5-gtk-platformtheme # for theming, font settings, cursor and to use gtk3 file chooser
+      - qt5-style-plugins # for mouse cursor theme fix
 
   libqpdf:
     plugin: make
@@ -47,13 +57,13 @@ parts:
       make DESTDIR=$SNAPCRAFT_PART_INSTALL install
     source: https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.3.1/qpdf-10.3.1.tar.gz
     build-packages:
-    - build-essential
-    - pkg-config
-    - libjpeg8-dev
-    - zlib1g-dev
+      - build-essential
+      - pkg-config
+      - libjpeg8-dev
+      - zlib1g-dev
     stage-packages:
-    - libjpeg8
-    - zlib1g
+      - libjpeg8
+      - zlib1g
 
   # Remote part for support of various desktop technologies
   # Refer: https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
