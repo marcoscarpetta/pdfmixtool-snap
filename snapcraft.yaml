@@ -1,96 +1,83 @@
 name: pdfmixtool
-version: "1.0beta"
+version: 1.0beta
 confinement: strict
 grade: stable
 base: core20
 adopt-info: pdfmixtool
-
-plugs:
-    desktop:
-    desktop-legacy:
-    wayland:
-    unity7:
-    home:
-    removable-media:
-    gsettings:
-    gtk-3-themes:
-        interface: content
-        target: $SNAP/data-dir/themes
-        default-provider: gtk-common-themes:gtk-3-themes
-    icon-themes:
-        interface: content
-        target: $SNAP/data-dir/icons
-        default-provider: gtk-common-themes:icon-themes
-    sound-themes:
-        interface: content
-        target: $SNAP/data-dir/sounds
-        default-provider: gtk-common-themes:sounds-themes
-
 apps:
-    pdfmixtool:
-        common-id: eu.scarpetta.PDFMixTool.desktop
-        command: usr/bin/pdfmixtool
-
-slots:
-    session-dbus-interface:
-        interface: dbus
-        name: eu.scarpetta.PDFMixTool.desktop
-        bus: session
-
+  pdfmixtool:
+    common-id: eu.scarpetta.PDFMixTool.desktop
+    command: usr/bin/pdfmixtool
+    plugs:
+    - desktop
+    - desktop-legacy
+    - opengl
+    - wayland
+    - x11
+    - home
+    - removable-media
+    command-chain:
+    - snap/command-chain/desktop-launch
 parts:
-    pdfmixtool:
-        after: [qt5, libqpdf]
-        plugin: cmake
-        source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/v1.0beta/pdfmixtool-v1.0beta.tar.gz
-        cmake-parameters:
-            - "-DCMAKE_INSTALL_PREFIX=/usr"
-            - "-DCMAKE_BUILD_TYPE=Release"
-        build-packages:
-            - build-essential
-            - qtbase5-dev
-            - qttools5-dev
-        stage-packages:
-            - dbus
-            - qttranslations5-l10n # common translations
-            - qtwayland5
-            - qt5-gtk-platformtheme # for theming, font settings, cursor and to use gtk3 file chooser
-            - qt5-style-plugins # for mouse cursor theme fix
-        parse-info:
-            - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
-        
-    libqpdf:
-        plugin: make
-        override-build: |
-            ./configure --prefix=/usr --disable-static
-            make
-            make DESTDIR=$SNAPCRAFT_PART_INSTALL install
-        source: https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.3.1/qpdf-10.3.1.tar.gz
-        build-packages:
-            - build-essential
-            - pkg-config
-            - libjpeg8-dev
-            - zlib1g-dev
-        stage-packages:
-            - libjpeg8
-            - zlib1g
-      
-    qt5:
-        source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-        source-subdir: qt
-        plugin: make
-        make-parameters: ["FLAVOR=qt5"]
-        build-packages:
-            - qtbase5-dev
-            - dpkg-dev
-        stage-packages:
-            - libxkbcommon0
-            - ttf-ubuntu-font-family
-            - dmz-cursor-theme
-            - light-themes
-            - adwaita-icon-theme
-            - gnome-themes-standard
-            - shared-mime-info
-            - libqt5gui5
-            - libgdk-pixbuf2.0-0
-            - libqt5svg5
-            - locales-all
+  pdfmixtool:
+    after:
+    - libqpdf
+    plugin: cmake
+    source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/v1.0beta/pdfmixtool-v1.0beta.tar.gz
+    cmake-parameters:
+    - -DCMAKE_INSTALL_PREFIX=/usr
+    - -DCMAKE_BUILD_TYPE=Release
+    parse-info:
+    - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
+    build-environment: &id001
+    - SNAPCRAFT_CMAKE_ARGS: -DCMAKE_FIND_ROOT_PATH=/snap/kde-frameworks-5-qt-5-15-core20-sdk/current
+  libqpdf:
+    plugin: make
+    override-build: |
+      ./configure --prefix=/usr --disable-static
+      make
+      make DESTDIR=$SNAPCRAFT_PART_INSTALL install
+    source: https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.3.1/qpdf-10.3.1.tar.gz
+    build-packages:
+    - build-essential
+    - pkg-config
+    - libjpeg8-dev
+    - zlib1g-dev
+    stage-packages:
+    - libjpeg8
+    - zlib1g
+    build-environment: *id001
+  kde-neon-extension:
+    build-packages:
+    - g++
+    build-snaps:
+    - kde-frameworks-5-qt-5-15-core20-sdk/latest/candidate
+    make-parameters:
+    - PLATFORM_PLUG=kde-frameworks-5-plug
+    plugin: make
+    source: $SNAPCRAFT_EXTENSIONS_DIR/desktop
+    source-subdir: kde-neon
+assumes:
+- snapd2.43
+plugs:
+  icon-themes:
+    default-provider: gtk-common-themes
+    interface: content
+    target: $SNAP/data-dir/icons
+  kde-frameworks-5-plug:
+    content: kde-frameworks-5-qt-5-15-core20-all
+    default-provider: kde-frameworks-5-qt-5-15-core20
+    interface: content
+    target: $SNAP/kf5
+  sound-themes:
+    default-provider: gtk-common-themes
+    interface: content
+    target: $SNAP/data-dir/sounds
+environment:
+  SNAP_DESKTOP_RUNTIME: $SNAP/kf5
+hooks:
+  configure:
+    command-chain:
+    - snap/command-chain/hooks-configure-desktop
+    plugs:
+    - desktop
