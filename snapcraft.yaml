@@ -12,9 +12,24 @@ architectures:
   - build-on: ppc64el
   - build-on: s390x
 
+plugs:
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/data-dir/sounds
+    default-provider: gtk-common-themes
+
 apps:
   pdfmixtool:
     command: bin/desktop-launch $SNAP/usr/bin/pdfmixtool
+    common-id: eu.scarpetta.PDFMixTool
     desktop: usr/share/applications/eu.scarpetta.PDFMixTool.desktop
     plugs:
       - home
@@ -25,15 +40,20 @@ apps:
       - opengl
       - removable-media
       - gsettings
+    environment:
+      HOME: "$SNAP_USER_COMMON"
 
 parts:
   pdfmixtool:
     after:
       - libqpdf
       - desktop-qt5
-    plugin: cmake
-    plugin: cmake
     source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/v1.0beta/pdfmixtool-v1.0beta.tar.gz
+    override-pull: |
+      snapcraftctl pull
+      # Point icon to the correct location
+      sed -i.bak -i -e 's|Icon=eu.scarpetta.PDFMixTool|Icon=/usr/share/icons/hicolor/scalable/apps/eu.scarpetta.PDFMixTool.svg|g' resources/eu.scarpetta.PDFMixTool.desktop
+    plugin: cmake
     cmake-parameters:
       - -DCMAKE_INSTALL_PREFIX=/usr
       - -DCMAKE_BUILD_TYPE=Release
@@ -66,27 +86,48 @@ parts:
       - libjpeg8
       - zlib1g
 
-  # Remote part for support of various desktop technologies
-  # Refer: https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
   desktop-qt5:
     source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-    source-depth: 1
     source-subdir: qt
     plugin: make
     make-parameters: ["FLAVOR=qt5"]
     build-packages:
-      - qtbase5-dev
       - dpkg-dev
+      - qtbase5-dev
     stage-packages:
-      - libxkbcommon0
-      - ttf-ubuntu-font-family
-      - dmz-cursor-theme
-      - light-themes
       - adwaita-icon-theme
+      - dmz-cursor-theme
       - gnome-themes-standard
-      - shared-mime-info
-      - libqt5gui5
       - libgdk-pixbuf2.0-0
-      - libqt5svg5 # for loading icon themes which are svg
-      - try: [appmenu-qt5] # not available on core18
+      - libgl1-mesa-dri
+      - libglu1-mesa
+      - libqt5gui5
+      - libqt5svg5
+      - libxkbcommon0
+      - light-themes
       - locales-all
+      - shared-mime-info
+      - ttf-ubuntu-font-family
+      - qt5-gtk-platformtheme
+      - qtwayland5
+      - xdg-user-dirs
+    override-prime: |
+      snapcraftctl prime
+      sed -i 's|XDG_DATA_HOME=$SNAP_USER_DATA|XDG_DATA_HOME=$SNAP_USER_COMMON|' $SNAPCRAFT_PRIME/bin/desktop-launch
+      sed -i 's|XDG_CONFIG_HOME=$SNAP_USER_DATA|XDG_CONFIG_HOME=$SNAP_USER_COMMON|' $SNAPCRAFT_PRIME/bin/desktop-launch
+  desktop-settings-packages:
+    plugin: nil
+    build-packages:
+      - libglib2.0-bin
+    stage-packages:
+      - gsettings-desktop-schemas
+      - ubuntu-settings
+    prime:
+      - usr/share/glib-2.0/schemas/*
+    after: [desktop-qt5]
+  desktop-settings-build:
+    plugin: nil
+    after: [desktop-settings-packages]
+    override-prime: |
+      set -eux
+      glib-compile-schemas usr/share/glib-2.0/schemas
