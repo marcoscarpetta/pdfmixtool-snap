@@ -1,39 +1,30 @@
 name: pdfmixtool
-confinement: strict
-grade: stable
 base: core18
 adopt-info: pdfmixtool
-
-architectures:
-  - build-on: amd64
-  #- build-on: arm64
-  #- build-on: armhf
-  #- build-on: i386 # Not supported by core20
-  #- build-on: ppc64el
-  #- build-on: s390x
+grade: stable
+confinement: strict
 
 apps:
   pdfmixtool:
     command: usr/bin/pdfmixtool
     common-id: eu.scarpetta.PDFMixTool
+    environment:
+      # Set theme fix on gnome/gtk
+      QT_QPA_PLATFORMTHEME: gtk3
     desktop: usr/share/applications/eu.scarpetta.PDFMixTool.desktop
     extensions:
       - kde-neon
     plugs:
+      - home
+      - removable-media
+      - unity7
       - opengl
-
-plugs:
-  kde-frameworks-5-plug:
-    content: kde-frameworks-5-qt-5-14-core18-all
-    interface: content
-    default-provider: kde-frameworks-5-qt-5-14-core18
-    target: kf5
 
 parts:
   pdfmixtool:
     after:
       - libqpdf
-    source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/f188463dc5e05e5587bc7c8f736794135a4c273c/pdfmixtool-f188463dc5e05e5587bc7c8f736794135a4c273c.tar.gz
+    source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/73fc861fc7dccefaf6b547a76b8f681eb7cccfa9/pdfmixtool-73fc861fc7dccefaf6b547a76b8f681eb7cccfa9.tar.gz
     override-pull: |
       snapcraftctl pull
       # Point icon to the correct location
@@ -43,12 +34,14 @@ parts:
     configflags:
       - -DCMAKE_INSTALL_PREFIX=/usr
       - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_FIND_ROOT_PATH=/snap/kde-frameworks-5-core18-sdk/current
     parse-info:
       - usr/share/metainfo/eu.scarpetta.PDFMixTool.appdata.xml
     build-snaps:
-      - kde-frameworks-5-qt-5-14-core18-sdk
+      - kde-frameworks-5-core18-sdk
     build-packages:
       - libglvnd-dev
+      - libx11-dev
 
   libqpdf:
     plugin: make
