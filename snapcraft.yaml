@@ -3,6 +3,8 @@ base: core18
 adopt-info: pdfmixtool
 grade: stable
 confinement: strict
+architectures:
+  - build-on: amd64
 
 apps:
   pdfmixtool:
@@ -24,7 +26,7 @@ parts:
   pdfmixtool:
     after:
       - libqpdf
-    source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/73fc861fc7dccefaf6b547a76b8f681eb7cccfa9/pdfmixtool-73fc861fc7dccefaf6b547a76b8f681eb7cccfa9.tar.gz
+    source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/3b7862b76607a638b4fecd21c9fe77fd435abdc2/pdfmixtool-3b7862b76607a638b4fecd21c9fe77fd435abdc2.tar.gz
     override-pull: |
       snapcraftctl pull
       # Point icon to the correct location
@@ -49,7 +51,7 @@ parts:
       ./configure --prefix=/usr --disable-static
       make
       make DESTDIR=$SNAPCRAFT_PART_INSTALL install
-    source: https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.3.1/qpdf-10.3.1.tar.gz
+    source: https://github.com/qpdf/qpdf/releases/download/release-qpdf-10.3.2/qpdf-10.3.2.tar.gz
     build-packages:
       - build-essential
       - pkg-config
