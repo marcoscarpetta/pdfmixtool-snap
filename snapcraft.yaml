@@ -26,7 +26,7 @@ parts:
   pdfmixtool:
     after:
       - libqpdf
-    source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/1e56c24f7267f02af06c8fe77fd2d71ee75979cf/pdfmixtool-1e56c24f7267f02af06c8fe77fd2d71ee75979cf.tar.gz
+    source: https://gitlab.com/scarpetta/pdfmixtool/-/archive/v1.0/pdfmixtool-v1.0.tar.gz
     override-pull: |
       snapcraftctl pull
       # Point icon to the correct location
